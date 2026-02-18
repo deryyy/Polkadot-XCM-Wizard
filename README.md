@@ -15,23 +15,23 @@ Writing raw XCM messages manually is a nightmare for developers:
 3.  **Fragmented Standards**: Different Parachains use different account formats (20-byte Ethereum vs 32-byte Substrate).
 
 ## 🛠️ The Solution
-**XCM Wizard v7.0** automates the entire engineering process. In **< 1 second**, it generates a **Universal Bridge Smart Contract** that is:
+**XCM Wizard v8.0** automates the entire engineering process. In **< 1 second**, it generates a **Universal Bridge Smart Contract** that is:
 * **Production-Ready**: Pre-configured with OpenZeppelin security modules.
 * **Universal**: One contract handles **BOTH** Native (GLMR/ASTR/DOT) and ERC-20 token transfers.
-* **Fault-Tolerant**: Built-in `auto-refund` logic if XCM execution fails on the remote chain.
+* **Fault-Tolerant**: Built-in `auto-refund` logic if XCM execution fails.
 
 ---
 
-## ✨ Key Features (v7.0)
+## ✨ Key Features (v8.0)
 
 ### 🛡️ Universal Architecture
 No need to deploy separate contracts. The generated code includes:
 - `bridgeNative()`: For bridging gas tokens (e.g., GLMR, MOVR).
 - `bridgeERC20()`: For bridging any standard ERC-20 token (e.g., USDT, USDC).
 
-### 🤖 Smart Encoding
-- Automatically handles **AccountKey20** (Ethereum-style) and **AccountId32** (Substrate-style) encoding based on your target chain.
-- optimized `abi.encodePacked` for Polkadot XCM v3 standards.
+### 🤖 Smart Encoding & Validation
+- **Input Validation**: The CLI prevents crashes by validating Parachain IDs, addresses, and weights before generation.
+- **Multi-Format Support**: Automatically handles **AccountKey20** (Ethereum-style) and **AccountId32** (Substrate-style) encoding.
 
 ### 🔒 Security First
 - **Auto-Refund**: If the XCM message fails to send, funds are instantly returned to the user.
