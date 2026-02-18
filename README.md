@@ -1,7 +1,7 @@
-# 🧙‍♂️ Polkadot XCM Wizard (CLI)
+# 🧙‍♂️ Polkadot XCM Wizard (CLI Tool)
 
-> **"Build Once, Scale Everywhere."**
-> The automated infrastructure tool to scaffold Cross-Consensus Messaging (XCM) smart contracts for Polkadot Hub.
+> **"Build Once, Bridge Everywhere."**
+> The ultimate infrastructure CLI tool to scaffold secure Cross-Consensus Messaging (XCM) smart contracts for Polkadot Hub & Parachains.
 
 ![Polkadot Badge](https://img.shields.io/badge/Polkadot-E6007A?style=for-the-badge&logo=polkadot&logoColor=white)
 ![Python Badge](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
@@ -9,19 +9,34 @@
 ![License Badge](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 ## 🚨 The Problem
-Developing on **Polkadot Hub** allows access to the entire ecosystem, but writing **raw XCM messages** (calculating bytes for `WithdrawAsset`, `BuyExecution`, `DepositAsset`) is:
-1.  **Complex**: Requires deep knowledge of MultiLocation standards.
-2.  **Error-Prone**: One wrong byte calculation leads to lost assets.
-3.  **Time-Consuming**: Developers waste hours debugging hex codes.
+Writing raw XCM messages manually is a nightmare for developers:
+1.  **Complexity**: Constructing `MultiLocation` and byte-encoding `WithdrawAsset` -> `BuyExecution` -> `DepositAsset` is error-prone.
+2.  **Risk**: One wrong byte calculation can lead to **permanently locked funds**.
+3.  **Fragmented Standards**: Different Parachains use different account formats (20-byte Ethereum vs 32-byte Substrate).
 
 ## 🛠️ The Solution
-**XCM Wizard** is a Python-based CLI tool that automates this process. It generates production-ready, secure Solidity smart contracts pre-configured to bridge assets to any Parachain (Moonbeam, Acala, Astar, etc).
+**XCM Wizard v7.0** automates the entire engineering process. In **< 1 second**, it generates a **Universal Bridge Smart Contract** that is:
+* **Production-Ready**: Pre-configured with OpenZeppelin security modules.
+* **Universal**: One contract handles **BOTH** Native (GLMR/ASTR/DOT) and ERC-20 token transfers.
+* **Fault-Tolerant**: Built-in `auto-refund` logic if XCM execution fails on the remote chain.
 
-### ✨ Key Features
-- **🤖 Automated Byte-Encoding**: Automatically calculates `abi.encodePacked` for low-level XCM instructions.
-- **⚡ Polkadot-Native**: Optimized for Polkadot Hub EVM Precompiles (`0x00...0804`).
-- **🛡️ Secure Scaffolding**: Includes `ReentrancyGuard` and `Ownable` by default.
-- **🧙 Interactive Interface**: A clean, professional CLI wizard for rapid development.
+---
+
+## ✨ Key Features (v7.0)
+
+### 🛡️ Universal Architecture
+No need to deploy separate contracts. The generated code includes:
+- `bridgeNative()`: For bridging gas tokens (e.g., GLMR, MOVR).
+- `bridgeERC20()`: For bridging any standard ERC-20 token (e.g., USDT, USDC).
+
+### 🤖 Smart Encoding
+- Automatically handles **AccountKey20** (Ethereum-style) and **AccountId32** (Substrate-style) encoding based on your target chain.
+- optimized `abi.encodePacked` for Polkadot XCM v3 standards.
+
+### 🔒 Security First
+- **Auto-Refund**: If the XCM message fails to send, funds are instantly returned to the user.
+- **ReentrancyGuard**: Prevents reentrancy attacks on bridge functions.
+- **SafeERC20**: Handles non-standard ERC-20 token implementations safely.
 
 ---
 
