@@ -30,19 +30,4 @@ No need to deploy separate contracts. The generated code includes:
 - `bridgeERC20()`: For bridging any standard ERC-20 token (e.g., USDT, USDC).
 
 ### 🤖 Smart Encoding & Validation
-- **Input Validation**: The CLI prevents crashes by validating Parachain IDs, addresses, and weights before generation.
-- **Multi-Format Support**: Automatically handles **AccountKey20** (Ethereum-style) and **AccountId32** (Substrate-style) encoding.
-
-### 🔒 Security First
-- **Auto-Refund**: If the XCM message fails to send, funds are instantly returned to the user.
-- **ReentrancyGuard**: Prevents reentrancy attacks on bridge functions.
-- **SafeERC20**: Handles non-standard ERC-20 token implementations safely.
-
----
-
-## 📦 Installation & Usage
-
-### 1. Clone the Repository
-```bash
-git clone [https://github.com/deryyy/Polkadot-XCM-Wizard.git](https://github.com/deryyy/Polkadot-XCM-Wizard.git)
-cd Polkadot-XCM-Wizard
+- **Input Validation**: The CLI prevents crashes by validating Parach
