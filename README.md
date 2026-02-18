@@ -3,10 +3,17 @@
 > **"Build Once, Bridge Everywhere."**
 > The ultimate infrastructure tool to automate secure Cross-Consensus Messaging (XCM) smart contracts for Polkadot Hub & Parachains.
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://deryyy.streamlit.app/)
 ![Polkadot](https://img.shields.io/badge/Polkadot-E6007A?style=for-the-badge&logo=polkadot&logoColor=white)
-![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)
 ![Solidity](https://img.shields.io/badge/Solidity-363636?style=for-the-badge&logo=solidity&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+
+---
+
+## 🌐 Live Demo
+**Try it right now from your browser! No installation required.**
+
+👉 **[Launch Polkadot XCM Wizard - Web dApp](https://deryyy.streamlit.app/)**
 
 ---
 
@@ -24,7 +31,7 @@ Whether you are a CLI power user or prefer a modern Web UI, we’ve got you cove
 
 ---
 
-## 🛠️ Installation & Usage
+## 🛠️ Installation & Usage (Local Development)
 
 ### 1. Prerequisites
 Ensure you have Python installed. Install the required dependencies:
