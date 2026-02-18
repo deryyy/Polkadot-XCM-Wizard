@@ -1,33 +1,32 @@
-# 🧙‍♂️ Polkadot XCM Wizard (CLI Tool)
+# 🧙‍♂️ Polkadot XCM Wizard v8.0
 
 > **"Build Once, Bridge Everywhere."**
-> The ultimate infrastructure CLI tool to scaffold secure Cross-Consensus Messaging (XCM) smart contracts for Polkadot Hub & Parachains.
+> Satu-satunya alat infrastruktur berbasis CLI dan Web dApp untuk membangun Smart Contract Cross-Consensus Messaging (XCM) yang aman di Polkadot Hub & Parachains.
 
-![Polkadot Badge](https://img.shields.io/badge/Polkadot-E6007A?style=for-the-badge&logo=polkadot&logoColor=white)
-![Python Badge](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Solidity Badge](https://img.shields.io/badge/Solidity-363636?style=for-the-badge&logo=solidity&logoColor=white)
-![License Badge](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-
-## 🚨 The Problem
-Writing raw XCM messages manually is a nightmare for developers:
-1.  **Complexity**: Constructing `MultiLocation` and byte-encoding `WithdrawAsset` -> `BuyExecution` -> `DepositAsset` is error-prone.
-2.  **Risk**: One wrong byte calculation can lead to **permanently locked funds**.
-3.  **Fragmented Standards**: Different Parachains use different account formats (20-byte Ethereum vs 32-byte Substrate).
-
-## 🛠️ The Solution
-**XCM Wizard v8.0** automates the entire engineering process. In **< 1 second**, it generates a **Universal Bridge Smart Contract** that is:
-* **Production-Ready**: Pre-configured with OpenZeppelin security modules.
-* **Universal**: One contract handles **BOTH** Native (GLMR/ASTR/DOT) and ERC-20 token transfers.
-* **Fault-Tolerant**: Built-in `auto-refund` logic if XCM execution fails.
+![Polkadot](https://img.shields.io/badge/Polkadot-E6007A?style=for-the-badge&logo=polkadot&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)
+![Solidity](https://img.shields.io/badge/Solidity-363636?style=for-the-badge&logo=solidity&logoColor=white)
 
 ---
 
-## ✨ Key Features (v8.0)
+## 🚀 Apa itu Polkadot XCM Wizard?
+Menulis pesan XCM secara manual sangatlah rumit dan berisiko tinggi (dana bisa terkunci selamanya). **XCM Wizard v8.0** hadir untuk mengotomatiskan proses ini. 
 
-### 🛡️ Universal Architecture
-No need to deploy separate contracts. The generated code includes:
-- `bridgeNative()`: For bridging gas tokens (e.g., GLMR, MOVR).
-- `bridgeERC20()`: For bridging any standard ERC-20 token (e.g., USDT, USDC).
+Sekarang tersedia dalam dua versi:
+1.  **Web dApp (Streamlit):** Interface modern bagi pengguna yang ingin kemudahan klik-dan-generate.
+2.  **CLI Tool:** Untuk developer hardcore yang bekerja melalui terminal.
 
-### 🤖 Smart Encoding & Validation
-- **Input Validation**: The CLI prevents crashes by validating Parach
+## ✨ Fitur Unggulan v8.0
+* **Universal Bridge:** Mendukung transfer Native Token (GLMR/ASTR/DOT) dan ERC-20 dalam satu contract.
+* **Auto-Refund Logic:** Dana otomatis kembali ke pengirim jika eksekusi XCM gagal.
+* **Multi-Format Encoding:** Mendukung AccountKey20 (Ethereum-style) dan AccountId32 (Substrate-style).
+* **Security First:** Dilengkapi dengan ReentrancyGuard dan OpenZeppelin SafeERC20.
+
+---
+
+## 🛠️ Cara Instalasi & Penggunaan
+
+### 1. Persiapan
+Pastikan Python sudah terinstal di komputer Anda. Kemudian instal library yang dibutuhkan:
+```bash
+pip install streamlit
