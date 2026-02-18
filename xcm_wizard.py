@@ -4,6 +4,7 @@ import sys
 import os
 import time
 import textwrap
+import re
 from datetime import datetime
 
 class Style:
@@ -16,27 +17,21 @@ class Style:
     RESET = '\033[0m'
 
     @staticmethod
-    def print_success(msg):
-        print(f"{Style.GREEN}✅ {msg}{Style.RESET}")
-
-    @staticmethod
-    def print_info(msg):
-        print(f"{Style.BLUE}ℹ️  {msg}{Style.RESET}")
+    def print_step(step, msg):
+        print(f"{Style.GREEN}[{step}]{Style.RESET} {msg}")
 
 class SolidityTemplates:
     @staticmethod
     def get_xcm_contract(p_name, author, para_id, acc_format, xcm_pre, p_idx, weight):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
         
-        # Account Format Logic
+        # Target account encoding
         if acc_format == "ethereum":
-            acc_enc = "uint8(1), uint8(0), beneficiaryBytes" # AccountKey20
+            acc_enc = "uint8(1), uint8(0), beneficiaryBytes"
             len_check = "beneficiaryBytes.length == 20"
-            len_err = "Invalid beneficiary length (must be 20 bytes)"
         else:
-            acc_enc = "uint8(0), uint8(0), beneficiaryBytes" # AccountId32
+            acc_enc = "uint8(0), uint8(0), beneficiaryBytes"
             len_check = "beneficiaryBytes.length == 32"
-            len_err = "Invalid beneficiary length (must be 32 bytes)"
 
         return textwrap.dedent(f"""\
             // SPDX-License-Identifier: MIT
@@ -48,9 +43,10 @@ class SolidityTemplates:
             import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
             /**
-             * @title  {p_name} Universal XCM Bridge
+             * @title  {p_name} Universal Bridge
              * @author {author}
-             * @notice Generated on {timestamp} via Polkadot XCM Wizard
+             * @notice Generated on {timestamp} for Polkadot Solidity Hackathon
+             * @dev XCM v3 with WithdrawAsset -> BuyExecution (Limited) -> DepositAsset (Wild All)
              */
             contract {p_name.replace(" ", "")}Bridge is Ownable, ReentrancyGuard {{
                 using SafeERC20 for IERC20;
@@ -66,52 +62,51 @@ class SolidityTemplates:
                 event XcmFailed(bytes32 indexed xcmHash, bytes reason);
 
                 constructor(address _xcmPrecompile) Ownable(msg.sender) {{
-                    require(_xcmPrecompile != address(0), "Invalid precompile address");
                     XCM_PRECOMPILE = _xcmPrecompile;
                 }}
 
                 // ==========================================
                 //              NATIVE BRIDGE
                 // ==========================================
-                
-                // Overload for ease of use with standard addresses
+
                 function bridgeNative(address beneficiary, uint128 amount) external payable {{
                     bridgeNative(abi.encodePacked(beneficiary), amount);
                 }}
 
                 function bridgeNative(bytes memory beneficiaryBytes, uint128 amount) public payable nonReentrant {{
                     require(msg.value >= amount, "Insufficient payment");
-                    require({len_check}, "{len_err}");
+                    require({len_check}, "Invalid beneficiary length");
 
-                    // 1. Construct Destination (MultiLocation)
+                    // Destination: parents=1, interior=X2(ParaId, Account)
                     bytes memory dest = abi.encodePacked(
                         uint8(1), uint8(2), uint8(0), uint32(DESTINATION_PARA_ID), {acc_enc}
                     );
 
-                    // 2. Construct Message (Withdraw -> BuyExecution -> Deposit)
+                    // Message: WithdrawAsset (3) -> BuyExecution (4) -> DepositAsset (6)
+                    // WithdrawAsset: 1 asset, Here (0x00), amount
+                    // BuyExecution: Limited (1), weight
+                    // DepositAsset: Wild All (0), beneficiary
                     bytes memory message = abi.encodePacked(
                         uint8(3),                        // WithdrawAsset
-                        uint8(1),                        // 1 Asset
-                        uint8(0),                        // Here (Native)
-                        amount,                          // Amount
+                        uint8(1),                        // assets count = 1
+                        uint8(0),                        // Here (native)
+                        amount,                          // amount (uint128)
                         uint8(4),                        // BuyExecution
-                        uint64(defaultWeight),           // Weight Limit
+                        uint8(1),                        // Limited
+                        uint64(defaultWeight),           // weight
                         uint8(6),                        // DepositAsset
-                        uint8(1),                        // 1 Asset
-                        uint8(1),                        // Wildcard All
-                        beneficiaryBytes                 // Beneficiary
+                        uint8(0),                        // Wild All
+                        beneficiaryBytes                 // beneficiary
                     );
 
-                    // 3. Send XCM via Precompile
                     (bool success, bytes memory returnData) = XCM_PRECOMPILE.call(
                         abi.encodeWithSignature("xcmSend(bytes,bytes)", dest, message)
                     );
-                    
                     bytes32 xcmHash = keccak256(message);
 
                     if (!success) {{
                         emit XcmFailed(xcmHash, returnData);
-                        payable(msg.sender).transfer(amount); // AUTO-REFUND
+                        payable(msg.sender).transfer(amount);
                     }} else {{
                         emit XcmSent(msg.sender, keccak256(beneficiaryBytes), amount, xcmHash);
                     }}
@@ -126,20 +121,127 @@ class SolidityTemplates:
                 }}
 
                 function bridgeERC20(address tokenAddress, bytes memory beneficiaryBytes, uint128 amount) public nonReentrant {{
-                    require({len_check}, "{len_err}");
-                    
-                    // Pull tokens from user first
+                    require({len_check}, "Invalid beneficiary length");
                     IERC20(tokenAddress).safeTransferFrom(msg.sender, address(this), amount);
 
-                    // 1. Construct Destination
                     bytes memory dest = abi.encodePacked(
                         uint8(1), uint8(2), uint8(0), uint32(DESTINATION_PARA_ID), {acc_enc}
                     );
 
-                    // 2. Construct Asset Location (GeneralKey/PalletInstance depending on chain)
-                    // Default logic: PalletInstance(50) for Assets pallet
+                    // Asset location: parents=1, interior=X2(PalletInstance(palletIndex), GeneralIndex(tokenAddress))
                     bytes memory assetLocation = abi.encodePacked(
                         uint8(1), uint8(2), uint8(3), uint8(palletIndex), uint8(0), uint128(uint160(tokenAddress))
                     );
 
-                    // 3. Construct Message
+                    bytes memory message = abi.encodePacked(
+                        uint8(3),                        // WithdrawAsset
+                        uint8(1),                        // assets count = 1
+                        assetLocation,                   // asset location
+                        amount,                          // amount
+                        uint8(4),                        // BuyExecution
+                        uint8(1),                        // Limited
+                        uint64(defaultWeight),           // weight
+                        uint8(6),                        // DepositAsset
+                        uint8(0),                        // Wild All
+                        beneficiaryBytes                 // beneficiary
+                    );
+
+                    (bool success, bytes memory returnData) = XCM_PRECOMPILE.call(
+                        abi.encodeWithSignature("xcmSend(bytes,bytes)", dest, message)
+                    );
+                    bytes32 xcmHash = keccak256(message);
+
+                    if (!success) {{
+                        emit XcmFailed(xcmHash, returnData);
+                        IERC20(tokenAddress).safeTransfer(msg.sender, amount);
+                    }} else {{
+                        emit XcmSent(msg.sender, keccak256(beneficiaryBytes), amount, xcmHash);
+                    }}
+                }}
+
+                // ==========================================
+                //              ADMIN & UTILS
+                // ==========================================
+
+                function setPalletIndex(uint8 _newIndex) external onlyOwner {{
+                    palletIndex = _newIndex;
+                }}
+
+                function setDefaultWeight(uint64 _newWeight) external onlyOwner {{
+                    defaultWeight = _newWeight;
+                }}
+
+                function rescueTokens(address token, address to, uint256 amount) external onlyOwner {{
+                    if (token == address(0)) payable(to).transfer(amount);
+                    else IERC20(token).safeTransfer(to, amount);
+                }}
+
+                receive() external payable {{}}
+            }}
+        """)
+
+class XcmWizard:
+    def __init__(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
+
+    def get_int_input(self, prompt, default, min_val=None, max_val=None):
+        while True:
+            val = input(prompt).strip()
+            if val == "":
+                return default
+            try:
+                ival = int(val)
+                if min_val is not None and ival < min_val:
+                    print(f"❌ Minimum value is {min_val}")
+                    continue
+                if max_val is not None and ival > max_val:
+                    print(f"❌ Maximum value is {max_val}")
+                    continue
+                return ival
+            except ValueError:
+                print("❌ Must be a number!")
+
+    def get_address_input(self, prompt, default):
+        while True:
+            val = input(prompt).strip()
+            if val == "":
+                return default
+            if re.match(r'^0x[a-fA-F0-9]{40}$', val):
+                return val
+            print("❌ Address must start with 0x followed by 40 hex characters")
+
+    def run(self):
+        print(Style.HEADER + Style.BOLD + "\n>>> POLKADOT XCM WIZARD v8.0 (PRODUCTION READY) <<<\n" + Style.RESET)
+        p_name = input("Project Name      : ") or "DeryBridge"
+        author = input("Author            : ") or "Dery"
+        
+        para_id = self.get_int_input("Target Parachain ID [2004]: ", 2004, 1, 9999)
+        pre_addr = self.get_address_input("XCM Precompile Addr [0x0000000000000000000000000000000000000804]: ", "0x0000000000000000000000000000000000000804")
+        
+        print("\n[1] Ethereum (20 bytes - Moonbeam)\n[2] Substrate (32 bytes - Astar/Polkadot)")
+        acc_choice = input("Select account format [1]: ") or "1"
+        acc_format = "ethereum" if acc_choice == "1" else "substrate"
+
+        print("\n--- Advanced Options (Press Enter for default) ---")
+        pallet_idx = self.get_int_input("Pallet index for ERC-20 [50]: ", 50, 1, 255)
+        def_weight = self.get_int_input("Default weight [1000000000]: ", 1000000000, 1, 10**12)
+
+        print("\n[*] Building smart contract...")
+        time.sleep(1)
+
+        code = SolidityTemplates.get_xcm_contract(
+            p_name, author, para_id, acc_format, pre_addr, pallet_idx, def_weight
+        )
+        filename = f"{p_name.replace(' ', '')}Bridge.sol"
+        with open(filename, "w", encoding='utf-8') as f:
+            f.write(code)
+
+        print(f"\n{Style.GREEN}✅ SUCCESS! File: {filename}{Style.RESET}")
+        print("📋 Next Steps:")
+        print("1. Install OpenZeppelin: `npm install @openzeppelin/contracts`")
+        print("2. Deploy with the XCM precompile address parameter")
+        print("3. Test on testnet (Moonbase Alpha) before mainnet")
+        print("4. Ensure weight is sufficient for your transaction")
+
+if __name__ == "__main__":
+    XcmWizard().run()
