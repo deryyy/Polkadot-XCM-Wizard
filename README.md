@@ -1,32 +1,32 @@
 # 🧙‍♂️ Polkadot XCM Wizard v8.0
 
 > **"Build Once, Bridge Everywhere."**
-> Satu-satunya alat infrastruktur berbasis CLI dan Web dApp untuk membangun Smart Contract Cross-Consensus Messaging (XCM) yang aman di Polkadot Hub & Parachains.
+> The ultimate infrastructure tool to automate secure Cross-Consensus Messaging (XCM) smart contracts for Polkadot Hub & Parachains.
 
 ![Polkadot](https://img.shields.io/badge/Polkadot-E6007A?style=for-the-badge&logo=polkadot&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)
 ![Solidity](https://img.shields.io/badge/Solidity-363636?style=for-the-badge&logo=solidity&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 
 ---
 
-## 🚀 Apa itu Polkadot XCM Wizard?
-Menulis pesan XCM secara manual sangatlah rumit dan berisiko tinggi (dana bisa terkunci selamanya). **XCM Wizard v8.0** hadir untuk mengotomatiskan proses ini. 
+## 🚀 Overview
+Writing raw XCM messages is complex, error-prone, and carries high risks (e.g., permanently locked funds). **Polkadot XCM Wizard v8.0** solves this by providing a developer-friendly interface to generate production-ready Solidity bridge contracts in seconds.
 
-Sekarang tersedia dalam dua versi:
-1.  **Web dApp (Streamlit):** Interface modern bagi pengguna yang ingin kemudahan klik-dan-generate.
-2.  **CLI Tool:** Untuk developer hardcore yang bekerja melalui terminal.
+Whether you are a CLI power user or prefer a modern Web UI, we’ve got you covered.
 
-## ✨ Fitur Unggulan v8.0
-* **Universal Bridge:** Mendukung transfer Native Token (GLMR/ASTR/DOT) dan ERC-20 dalam satu contract.
-* **Auto-Refund Logic:** Dana otomatis kembali ke pengirim jika eksekusi XCM gagal.
-* **Multi-Format Encoding:** Mendukung AccountKey20 (Ethereum-style) dan AccountId32 (Substrate-style).
-* **Security First:** Dilengkapi dengan ReentrancyGuard dan OpenZeppelin SafeERC20.
+## ✨ Key Features (v8.0)
+* **Universal Bridge:** A single contract for both Native Assets (GLMR, ASTR, DOT) and ERC-20 tokens.
+* **Production-Ready Security:** Integrated with OpenZeppelin’s `Ownable`, `ReentrancyGuard`, and `SafeERC20`.
+* **Auto-Refund Logic:** Automatically returns funds to the sender if the XCM execution fails at the destination.
+* **Smart Multi-Location Encoding:** Seamlessly handles **AccountKey20** (Ethereum-style) and **AccountId32** (Substrate-style) formats.
+* **XCM v3 Optimized:** Pre-configured with efficient `WithdrawAsset` -> `BuyExecution` -> `DepositAsset` instruction sets.
 
 ---
 
-## 🛠️ Cara Instalasi & Penggunaan
+## 🛠️ Installation & Usage
 
-### 1. Persiapan
-Pastikan Python sudah terinstal di komputer Anda. Kemudian instal library yang dibutuhkan:
+### 1. Prerequisites
+Ensure you have Python installed. Install the required dependencies:
 ```bash
 pip install streamlit
